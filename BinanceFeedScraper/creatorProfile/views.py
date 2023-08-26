@@ -23,7 +23,7 @@ load_dotenv()
 logging.basicConfig(filename='logs/creator_info.log', level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
 @api_view(['GET'])
-def creator_info(request):
+def creator_details(request):
     try:
         # Check if the data is in the cache
         data = cache.get('creator_info')
@@ -182,3 +182,10 @@ class PostListCreateAPIView(ListCreateAPIView):
 
         # Return a JSON response with the serialized data and a status code of 201 (created)
         return Response(serializer.data, status=201)
+<<<<<<< HEAD
+=======
+
+
+def post_detail():
+    pass
+>>>>>>> 7de3a6b (Url pattern added into creatorProfile)

@@ -1,9 +1,12 @@
 from django.urls import path
-from . import views
+from .views import creator_details, PostListCreateAPIView, post_detail
 
 urlpatterns = [
-    path('creatorProfile/info/', views.creator_info, name='creator_info'),
-    path('creatorProfile/posts/', views.creator_posts, name='creator_posts'),
-    path('creatorProfile/singlePost/<int:post_id>/', views.single_post, name='single_post'),
+    # This URL pattern matches the creator_profile view that returns the profile information of a specific user
+    path('info/', creator_details, name='creator_details'),
+    # This URL pattern matches the PostListCreateAPIView view that returns a list of posts created by a specific user or creates a new post
+    path('posts/', PostListCreateAPIView.as_view(), name='creator_posts'),
+    # This URL pattern matches the post_detail view that returns a single post with its details
+    path('singlePost/<int:post_id>/', post_detail, name='post_detail'),
 ]
 
