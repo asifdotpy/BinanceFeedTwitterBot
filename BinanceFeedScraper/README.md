@@ -1,4 +1,4 @@
-# BinanceFeedScraper
+# BinanceFeedScraper 
 
 ## Description
 This project scrapes Binance feeds and provides the data to other components for further processing.
@@ -8,11 +8,13 @@ This project scrapes Binance feeds and provides the data to other components for
 - `requests` library
 - `beautifulsoup4` library
 - `lxml` library
+- ChromeDriver
 
 ## Setup
 1. Clone this repository.
 2. Install the required libraries by running `pip install -r requirements.txt`.
-3. Run the scraper by executing `python scraper.py`.
+3. Set up ChromeDriver by following the instructions in the ChromeDriver documentation.
+4. Run the Django development server by executing `python manage.py runserver`.
 
 ## Usage
 The scraper will automatically fetch the latest Binance feeds and store them in a local database for further processing.
