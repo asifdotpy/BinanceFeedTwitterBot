@@ -182,10 +182,5 @@ class PostListCreateAPIView(ListCreateAPIView):
 
         # Return a JSON response with the serialized data and a status code of 201 (created)
         return Response(serializer.data, status=201)
-<<<<<<< HEAD
-=======
 
 
-def post_detail():
-    pass
->>>>>>> 7de3a6b (Url pattern added into creatorProfile)
