@@ -12,6 +12,7 @@ click-plugins==1.1.1
 click-repl==0.3.0
 Django==4.2.4
 django-restframework==0.0.1
+djangorestframework==3.14.0
 exceptiongroup==1.1.3
 h11==0.14.0
 idna==3.4
@@ -22,6 +23,7 @@ prompt-toolkit==3.0.39
 PySocks==1.7.1
 python-dateutil==2.8.2
 python-dotenv==1.0.0
+pytz==2023.3
 requests==2.31.0
 selenium==4.11.2
 six==1.16.0

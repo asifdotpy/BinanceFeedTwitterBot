@@ -21,8 +21,29 @@ from lxml import html
 # Load the environment variables from .env file
 load_dotenv()
 
+# Get the absolute path of the directory containing the script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Define the relative path from the script directory to the project directory
+project_rel_path = '..'
+
+# Join the script directory with the relative path to get the absolute path to the project directory
+project_dir = os.path.join(script_dir, project_rel_path)
+
+# Define the relative path from the project directory to the log directory
+log_rel_path = 'logs'
+
+# Join the project directory with the relative path to get the absolute path to the log directory
+log_dir = os.path.join(project_dir, log_rel_path)
+
+# Create the log directory if it doesn't exist
+os.makedirs(log_dir, exist_ok=True)
+
+# Define the path to the main log file
+log_file = os.path.join(log_dir, 'main.log')
+
 # Set up the logger
-logging.basicConfig(filename='logs/creator_info.log', level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
+logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
 @api_view(['GET'])
 def creator_details(request):
