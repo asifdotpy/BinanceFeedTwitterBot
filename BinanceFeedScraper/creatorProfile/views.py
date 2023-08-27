@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.generics import ListCreateAPIView
 from .models import Post
-from .serializer import CreatorInfoSerializer, PostSerializer
+from .serializers import CreatorInfoSerializer, PostSerializer
 from celery import shared_task
 from dateutil.parser import parse
 from selenium import webdriver
@@ -15,6 +15,8 @@ from selenium.webdriver.support import expected_conditions as EC
 import logging
 import os
 from dotenv import load_dotenv
+import requests
+from lxml import html
 
 # Load the environment variables from .env file
 load_dotenv()
@@ -184,3 +186,5 @@ class PostListCreateAPIView(ListCreateAPIView):
         return Response(serializer.data, status=201)
 
 
+def post_detail():
+    pass
