@@ -53,7 +53,8 @@ def creator_details(request):
 
         if data is None:
             # Fetch the web page using environment variable for the URL
-            page = requests.get(os.getenv('CREATOR_PROFILE_URL'))
+            profile_url = os.getenv('CREATOR_PROFILE_URL')
+            page = requests.get(profile_url)
             tree = html.fromstring(page.content)
 
             # Extract the information using xpath
@@ -64,9 +65,12 @@ def creator_details(request):
             shared_count = tree.xpath("//div[contains(@class, 'profile-contaniner')]//div[contains(@class, 'kol-info-bottom-column')]//div//div/text()")
             bio_text = tree.xpath("//div[contains(@class,'profile-contaniner')]//div/text()")
             last_post = tree.xpath("(//div[@class='create-time'])/text()")
+            # Extract the Binance ID from the profile URL
+            binance_id = profile_url.split('/')[-1]
 
             # Create a serializer instance with the extracted data
             data = {
+                'binance_id': binance_id,
                 'avatar_name': avatar_name,
                 'avatar_image': avatar_image,
                 'followers_count': followers_count,
