@@ -20,5 +20,5 @@ from creatorProfile import urls as creatorProfile_urls
 
 urlpatterns = [
     path("admin/", admin.site.urls, name='admin'),
-    path('creatorProfile/', include(creatorProfile_urls), name='creatorProfile'),
+    path('creator/', include(creatorProfile_urls), name='creator'),
 ]

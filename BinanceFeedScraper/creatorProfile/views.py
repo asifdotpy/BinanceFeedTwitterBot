@@ -22,7 +22,7 @@ from lxml import html
 load_dotenv()
 
 # Set up the logger
-logging.basicConfig(filename='logs/creator_info.log', level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
+logging.basicConfig(filename='logs/main.log', level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
 @api_view(['GET'])
 def creator_details(request):
