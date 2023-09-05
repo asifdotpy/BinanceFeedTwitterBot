@@ -1,0 +1,104 @@
+openapi: 3.0.2
+info:
+  title: Binance Feed Scraper API
+  description: A Django-based API for scraping feed data from Binance
+  version: 1.0.0
+  contact:
+    name: Asif Iqbal 
+    email: asifdotpy@gmail.com
+  license:
+    name: MIT License
+    url: https://github.com/asifdotpy/BinanceFeedTwitterBot/blob/main/LICENSE 
+host: http://127.0.0.1:8000/ 
+basePath: /api/v1
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+security:
+  - bearerAuth: []
+paths:
+ /creator-details:
+    get:
+      summary: Get creator details
+      description: Returns detailed information about a creator profile
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  avatar_name:
+                    type: string
+                  avatar_image:
+                    type: string
+                  followers_count:
+                    type: integer
+                  liked_count:
+                    type: integer
+                  shared_count:
+                    type: integer
+                  bio_text:
+                    type: string
+                  last_post:
+                    type: string
+                    format: date-time
+                    pattern: ^(\\d{4}-\\d{2}-\\d{2} \\d:\\d:\\d)$ 
+components:
+  schemas:
+    Creator:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique ID of the creator
+        name:
+          type: string
+          description: Name of the creator
+        avatarImage:
+          type: string
+          format: uri
+          description: URL of the creator's avatar image
+        followersCount:
+          type: integer
+          description: Number of followers the creator has
+        likedCount:
+          type: integer
+          description: Number of likes the creator has received
+        sharedCount:
+          type: integer
+          description: Number of times the creator's posts have been shared
+        bioText:
+          type: string
+          description: Bio text of the creator
+        lastPost:
+          type: string
+          format: date-time
+          pattern: ^(\\d{4}-\\d{2}-\\d{2} \\d:\\d:\\d)$
+          description: Timestamp of the creator's last post
+    
+    BinanceFeedScraperAPI:
+      type: object
+      properties:
+        apiKey:
+          type: string
+          description: API key for accessing Binance data
+        apiSecret:
+          type: string
+          description: API secret for accessing Binance data
+        baseUrl:
+          type: string
+          description: Base URL for Binance API requests
+        timeout:
+          type: integer
+          description: Timeout in seconds for Binance API requests
+      
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: Bearer
+      bearerFormat: JWT

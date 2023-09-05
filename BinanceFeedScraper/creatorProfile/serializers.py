@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Post
 
 class CreatorInfoSerializer(serializers.Serializer):
+    binance_id = serializers.CharField()
     avatar_name = serializers.CharField()
     avatar_image = serializers.URLField()
     followers_count = serializers.IntegerField()

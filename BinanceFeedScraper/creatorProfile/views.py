@@ -21,8 +21,33 @@ from lxml import html
 # Load the environment variables from .env file
 load_dotenv()
 
+# Get the absolute path of the directory containing the script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Define the relative path from the script directory to the project directory
+project_rel_path = '..'
+
+# Join the script directory with the relative path to get the absolute path to the project directory
+project_dir = os.path.join(script_dir, project_rel_path)
+
+# Define the relative path from the project directory to the log directory
+log_rel_path = 'logs'
+
+# Join the project directory with the relative path to get the absolute path to the log directory
+log_dir = os.path.join(project_dir, log_rel_path)
+
+# Create the log directory if it doesn't exist
+os.makedirs(log_dir, exist_ok=True)
+
+# Define the path to the main log file
+log_file = os.path.join(log_dir, 'main.log')
+
 # Set up the logger
+<<<<<<< HEAD
 logging.basicConfig(filename='logs/main.log', level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
+=======
+logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
+>>>>>>> refs/remotes/origin/main
 
 @api_view(['GET'])
 def creator_details(request):
@@ -32,7 +57,8 @@ def creator_details(request):
 
         if data is None:
             # Fetch the web page using environment variable for the URL
-            page = requests.get(os.getenv('CREATOR_PROFILE_URL'))
+            profile_url = os.getenv('CREATOR_PROFILE_URL')
+            page = requests.get(profile_url)
             tree = html.fromstring(page.content)
 
             # Extract the information using xpath
@@ -43,9 +69,12 @@ def creator_details(request):
             shared_count = tree.xpath("//div[contains(@class, 'profile-contaniner')]//div[contains(@class, 'kol-info-bottom-column')]//div//div/text()")
             bio_text = tree.xpath("//div[contains(@class,'profile-contaniner')]//div/text()")
             last_post = tree.xpath("(//div[@class='create-time'])/text()")
+            # Extract the Binance ID from the profile URL
+            binance_id = profile_url.split('/')[-1]
 
             # Create a serializer instance with the extracted data
             data = {
+                'binance_id': binance_id,
                 'avatar_name': avatar_name,
                 'avatar_image': avatar_image,
                 'followers_count': followers_count,
