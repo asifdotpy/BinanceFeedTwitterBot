@@ -54,8 +54,29 @@ def creator_details(request):
         if data is None:
             # Fetch the web page using environment variable for the URL
             profile_url = os.getenv('CREATOR_PROFILE_URL')
-            page = requests.get(profile_url)
-            tree = html.fromstring(page.content)
+            # Add a try-except block to handle invalid URL and timeout exceptions
+            try:
+                response = requests.get(profile_url)
+            except requests.exceptions.InvalidURL as err:
+                # Log the invalid URL and raise the exception again
+                logging.error(f"Invalid URL: {err.request.url}")
+                raise
+            except requests.exceptions.Timeout as err:
+                # Log the timeout error and raise the exception again
+                logging.error(f"Timeout error: {err.request.url}")
+                raise
+            
+            # Handle common HTTP errors by raising appropriate exceptions and logging error messages
+            try:
+                response.raise_for_status()
+            except requests.exceptions.HTTPError as err:
+                # Log the status code, the reason, and the URL of the request
+                logging.error(f"HTTP error occurred: {err.response.status_code} {err.response.reason} {err.request.url}")
+                # Raise the exception again to be handled by the outer except block
+                raise
+            
+            # Parse the response content as HTML
+            tree = html.fromstring(response.content)
 
             # Extract the information using xpath
             avatar_name = tree.xpath("//div[contains(@class, 'profile-contaniner')]//div[contains(@class, 'avatar-name-container')]//div[contains(@class, 'nick')]/text()")
@@ -211,5 +232,7 @@ class PostListCreateAPIView(ListCreateAPIView):
         return Response(serializer.data, status=201)
 
 
-def post_detail():
+# write post details
+@api_view(['GET'])
+def post_details(request, pk):
     pass
