@@ -43,8 +43,9 @@ os.makedirs(log_dir, exist_ok=True)
 log_file = os.path.join(log_dir, 'main.log')
 
 # Set up the logger
-logging.basicConfig(filename='logs/main.log', level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
-logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
+logging.basicConfig(filename=log_file, level=logging.INFO,
+                    format='%(asctime)s %(levelname)s %(message)s')
+
 
 @api_view(['GET'])
 def creator_details(request):
@@ -55,7 +56,6 @@ def creator_details(request):
         if data is None:
             # Fetch the web page using environment variable for the URL
             profile_url = os.getenv('CREATOR_PROFILE_URL')
-            print(profile_url)
             # Add a try-except block to handle invalid URL and timeout exceptions
             try:
                 response = requests.get(profile_url)
@@ -67,26 +67,33 @@ def creator_details(request):
                 # Log the timeout error and raise the exception again
                 logging.error(f"Timeout error: {err.request.url}")
                 raise
-            
+
             # Handle common HTTP errors by raising appropriate exceptions and logging error messages
             try:
                 response.raise_for_status()
             except requests.exceptions.HTTPError as err:
                 # Log the status code, the reason, and the URL of the request
-                logging.error(f"HTTP error occurred: {err.response.status_code} {err.response.reason} {err.request.url}")
+                logging.error(
+                    f"HTTP error occurred: {err.response.status_code} {err.response.reason} {err.request.url}")
                 # Raise the exception again to be handled by the outer except block
                 raise
-            
+
             # Parse the response content as HTML
             tree = html.fromstring(response.content)
 
             # Extract the information using xpath
-            avatar_name = tree.xpath("//div[contains(@class, 'profile-contaniner')]//div[contains(@class, 'avatar-name-container')]//div[contains(@class, 'nick')]/text()")
-            avatar_image = tree.xpath("//div[@class='avatar-box']/img/@data-src")
-            followers_count = tree.xpath("//div[contains(@class, 'profile-contaniner')]//div[contains(@class, 'kol-info-bottom-column')]//div//div/text()")
-            liked_count = tree.xpath("//div[contains(@class, 'profile-contaniner')]//div[contains(@class, 'kol-info-bottom-column')]//div//div/text()")
-            shared_count = tree.xpath("//div[contains(@class, 'profile-contaniner')]//div[contains(@class, 'kol-info-bottom-column')]//div//div/text()")
-            bio_text = tree.xpath("//div[contains(@class,'profile-contaniner')]//div/text()")
+            avatar_name = tree.xpath(
+                "//div[contains(@class, 'profile-contaniner')]//div[contains(@class, 'avatar-name-container')]//div[contains(@class, 'nick')]/text()")
+            avatar_image = tree.xpath(
+                "//div[@class='avatar-box']/img/@data-src")
+            followers_count = tree.xpath(
+                "//div[contains(@class, 'profile-contaniner')]//div[contains(@class, 'kol-info-bottom-column')]//div//div/text()")
+            liked_count = tree.xpath(
+                "//div[contains(@class, 'profile-contaniner')]//div[contains(@class, 'kol-info-bottom-column')]//div//div/text()")
+            shared_count = tree.xpath(
+                "//div[contains(@class, 'profile-contaniner')]//div[contains(@class, 'kol-info-bottom-column')]//div//div/text()")
+            bio_text = tree.xpath(
+                "//div[contains(@class,'profile-contaniner')]//div/text()")
             last_post = tree.xpath("(//div[@class='create-time'])/text()")
             # Extract the Binance ID from the profile URL
             binance_id = profile_url.split('/')[-1]
@@ -118,6 +125,7 @@ def creator_details(request):
         logging.error(e)
         return Response({'message': 'Something went wrong. Please try again later.'}, status=500)
 
+
 @shared_task
 def scrape_posts():
     try:
@@ -130,7 +138,8 @@ def scrape_posts():
 
         # Wait for the posts to load
         wait = WebDriverWait(driver, 10)
-        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "css-1x9zltl")))
+        wait.until(EC.presence_of_element_located(
+            (By.CLASS_NAME, "css-1x9zltl")))
 
         # Initialize an empty list to store the posts elements
         posts = []
@@ -152,11 +161,13 @@ def scrape_posts():
                 num_posts = current_posts
 
                 # Scroll to the bottom of the page
-                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                driver.execute_script(
+                    "window.scrollTo(0, document.body.scrollHeight);")
 
                 # Wait for new posts to load or timeout
                 try:
-                    wait.until(lambda driver: len(driver.find_elements_by_class_name("css-1x9zltl")) > num_posts)
+                    wait.until(lambda driver: len(
+                        driver.find_elements_by_class_name("css-1x9zltl")) > num_posts)
                 except:
                     # No more posts loaded, break the loop
                     break
@@ -172,14 +183,16 @@ def scrape_posts():
             post_url = post.find_element_by_tag_name("a").get_attribute("href")
 
             # Get or create a Post object with the same title and URL as the post element
-            post_obj, created = Post.objects.get_or_create(title=title, url=post_url)
+            post_obj, created = Post.objects.get_or_create(
+                title=title, url=post_url)
 
             # If the Post object is newly created, set its summary and created_at attributes and save it
             if created:
                 post_obj.summary = summary
 
                 # Find the creation time element by its class name and get its text content
-                create_time = post.find_element_by_class_name("create-time").text
+                create_time = post.find_element_by_class_name(
+                    "create-time").text
 
                 # Parse the creation time string into a datetime object using dateutil.parser.parse
                 create_time = parse(create_time)
@@ -194,6 +207,7 @@ def scrape_posts():
     except Exception as e:
         # Log the exception
         logging.error(e)
+
 
 class PostListCreateAPIView(ListCreateAPIView):
     # Specify the queryset and serializer class for this view
