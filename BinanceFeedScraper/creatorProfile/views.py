@@ -43,11 +43,8 @@ os.makedirs(log_dir, exist_ok=True)
 log_file = os.path.join(log_dir, 'main.log')
 
 # Set up the logger
-<<<<<<< HEAD
 logging.basicConfig(filename='logs/main.log', level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
-=======
 logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
->>>>>>> refs/remotes/origin/main
 
 @api_view(['GET'])
 def creator_details(request):
