@@ -55,6 +55,7 @@ def creator_details(request):
         if data is None:
             # Fetch the web page using environment variable for the URL
             profile_url = os.getenv('CREATOR_PROFILE_URL')
+            print(profile_url)
             # Add a try-except block to handle invalid URL and timeout exceptions
             try:
                 response = requests.get(profile_url)

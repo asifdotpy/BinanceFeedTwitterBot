@@ -21,4 +21,5 @@ from creatorProfile import urls as creatorProfile_urls
 urlpatterns = [
     path("admin/", admin.site.urls, name='admin'),
     path('creator/', include(creatorProfile_urls), name='creator'),
+    path("__debug__/", include("debug_toolbar.urls")),
 ]
