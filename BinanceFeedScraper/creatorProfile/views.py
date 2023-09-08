@@ -83,18 +83,19 @@ def creator_details(request):
 
             # Extract the information using xpath
             avatar_name = tree.xpath(
-                "//div[contains(@class, 'profile-contaniner')]//div[contains(@class, 'avatar-name-container')]//div[contains(@class, 'nick')]/text()")
-            avatar_image = tree.xpath(
-                "//div[@class='avatar-box']/img/@data-src")
-            followers_count = tree.xpath(
-                "//div[contains(@class, 'profile-contaniner')]//div[contains(@class, 'kol-info-bottom-column')]//div//div/text()")
-            liked_count = tree.xpath(
-                "//div[contains(@class, 'profile-contaniner')]//div[contains(@class, 'kol-info-bottom-column')]//div//div/text()")
-            shared_count = tree.xpath(
-                "//div[contains(@class, 'profile-contaniner')]//div[contains(@class, 'kol-info-bottom-column')]//div//div/text()")
+                "//div[contains(@class, 'profile-contaniner')]//div[contains(@class, 'avatar-name-container')]//div[contains(@class, 'nick')]/text()")[0]
+            # avatar_image = tree.xpath(
+            #    "(//div[@class='avatar-box click-able css-4cffwv']/img[@src])[1]")
+            followers_count = int(tree.xpath(
+                "(//div[contains(@class, 'profile-contaniner')]//div[contains(@class, 'kol-info-bottom-column')]/div)[1]/div[1]/text()")[0])
+            liked_count = int(tree.xpath(
+                "(//div[contains(@class, 'profile-contaniner')]//div[contains(@class, 'kol-info-bottom-column')]/div)[2]/div[1]/text()")[0])
+            shared_count = int(tree.xpath(
+                "(//div[contains(@class, 'profile-contaniner')]//div[contains(@class, 'kol-info-bottom-column')]/div)[3]/div[1]/text()")[0])
             bio_text = tree.xpath(
-                "//div[contains(@class,'profile-contaniner')]//div/text()")
-            last_post = tree.xpath("(//div[@class='create-time'])/text()")
+                "//div[contains(@class,'profile-contaniner')]/div/div[3]/text()")[0]
+            last_post = tree.xpath(
+                "((//div[@class='create-time']))[1]/text()")[0]
             # Extract the Binance ID from the profile URL
             binance_id = profile_url.split('/')[-1]
 
@@ -102,7 +103,6 @@ def creator_details(request):
             data = {
                 'binance_id': binance_id,
                 'avatar_name': avatar_name,
-                'avatar_image': avatar_image,
                 'followers_count': followers_count,
                 'liked_count': liked_count,
                 'shared_count': shared_count,
@@ -114,10 +114,11 @@ def creator_details(request):
             # Validate and cache the serialized data
             if serializer.is_valid():
                 data = serializer.data
-                cache.set('creator_info', data, timeout=settings.CACHE_TTL)
             else:
-                return Response(serializer.errors, status=400)
-
+                data = serializer.initial_data
+                print(data)
+                print(serializer.errors)
+            cache.set('creator_info', data, timeout=settings.CACHE_TTL)
         # Return the cached data
         return Response(data)
     except Exception as e:

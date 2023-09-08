@@ -28,21 +28,21 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-# Application definition   
+# Application definition
 DJANGO_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "django.contrib.staticfiles", 
-    "rest_framework",    
+    "django.contrib.staticfiles",
+    "rest_framework",
     "debug_toolbar",
-    ]
+]
 
 USER_APPS = [
     "creatorProfile",
-    ]
+]
 
 INSTALLED_APPS = DJANGO_APPS + USER_APPS
 
@@ -133,6 +133,19 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Cache timeout in seconds
 CACHE_TTL = 60 * 15
 
+# Use redis as cache backen
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://localhost:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+        "KEY_PREFIX": "binance_feed_scraper",
+    }
+}
+
+# Set Internal IPS for Django Debug Toolbar
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
