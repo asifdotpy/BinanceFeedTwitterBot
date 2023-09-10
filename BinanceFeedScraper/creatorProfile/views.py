@@ -4,6 +4,8 @@ from django.views.decorators.cache import cache_page
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.generics import ListCreateAPIView
+from rest_framework.views import APIView
+from rest_framework_extensions.cache.decorators import cache_response
 from .models import Post
 from .serializers import CreatorInfoSerializer, PostSerializer
 from celery import shared_task
@@ -17,6 +19,7 @@ import os
 from dotenv import load_dotenv
 import requests
 from lxml import html
+import chromedriver_binary
 
 # Load the environment variables from .env file
 load_dotenv()
@@ -129,55 +132,77 @@ def creator_details(request):
 
 @shared_task
 def scrape_posts():
+    # Get the profile URL from the environment variable
+    url = os.environ.get("CREATOR_PROFILE_URL")
+
+    # Check if the URL is valid
+    if not url:
+        logging.error("No profile URL found in environment variable")
+        return
+
+    # Create a driver instance
     try:
-        # Get the profile URL from the environment variable
-        url = os.environ.get("CREATOR_PROFILE_URL")
-
-        # Create a driver instance and open the URL
         driver = webdriver.Chrome()
-        driver.get(url)
+    except Exception as e:
+        logging.error("Failed to create driver instance", exc_info=e)
+        return
 
-        # Wait for the posts to load
+    # Open the URL
+    try:
+        driver.get(url)
+    except Exception as e:
+        logging.error("Failed to open profile URL", exc_info=e)
+        driver.quit()
+        return
+
+    # Wait for the posts to load
+    try:
         wait = WebDriverWait(driver, 10)
         wait.until(EC.presence_of_element_located(
             (By.CLASS_NAME, "css-1x9zltl")))
+    except Exception as e:
+        logging.error("Failed to wait for posts elements", exc_info=e)
+        driver.quit()
+        return
 
-        # Initialize an empty list to store the posts elements
-        posts = []
+    # Initialize an empty list to store the posts elements
+    posts = []
 
-        # Initialize a variable to store the number of posts
-        num_posts = 0
+    # Initialize a variable to store the number of posts
+    num_posts = 0
 
-        # Loop until there are no more posts to load
-        while True:
-            # Find all the posts elements on the page
-            posts = driver.find_elements_by_class_name("css-1x9zltl")
+    # Loop until there are no more posts to load
+    while True:
+        # Find all the posts elements on the page
+        posts = driver.find_elements_by_class_name("css-1x9zltl")
 
-            # Get the current number of posts
-            current_posts = len(posts)
+        # Get the current number of posts
+        current_posts = len(posts)
 
-            # Check if there are new posts loaded
-            if current_posts > num_posts:
-                # Update the number of posts
-                num_posts = current_posts
+        # Check if there are new posts loaded
+        if current_posts > num_posts:
+            # Update the number of posts
+            num_posts = current_posts
 
-                # Scroll to the bottom of the page
-                driver.execute_script(
-                    "window.scrollTo(0, document.body.scrollHeight);")
+            # Scroll to the bottom of the page
+            driver.execute_script(
+                "window.scrollTo(0, document.body.scrollHeight);")
 
-                # Wait for new posts to load or timeout
-                try:
-                    wait.until(lambda driver: len(
-                        driver.find_elements_by_class_name("css-1x9zltl")) > num_posts)
-                except:
-                    # No more posts loaded, break the loop
-                    break
-            else:
-                # No more posts loaded, break the loop
+            # Wait for new posts to load or timeout
+            try:
+                wait.until(lambda driver: len(
+                    driver.find_elements_by_class_name("css-1x9zltl")) > num_posts)
+            except Exception as e:
+                logging.warning(
+                    "No more posts loaded or timed out", exc_info=e)
                 break
+        else:
+            # No more posts loaded, break the loop
+            break
 
-        # Get or create a Post object for each post element and save it in the database
-        for post in posts:
+    # Get or create a Post object for each post element and save it in the database
+    for post in posts:
+        try:
             # Get the title, summary, and URL of the post
             title = post.find_element_by_class_name("css-1kx3y31").text
             summary = post.find_element_by_class_name("css-vurnku").text
@@ -201,13 +226,11 @@ def scrape_posts():
                 # Set the created_at attribute of the Post object to the datetime object
                 post_obj.created_at = create_time
                 post_obj.save()
+        except Exception as e:
+            logging.error("Failed to get or create Post object", exc_info=e)
 
-        # Close the driver
-        driver.quit()
-
-    except Exception as e:
-        # Log the exception
-        logging.error(e)
+    # Close the driver
+    driver.quit()
 
 
 class PostListCreateAPIView(ListCreateAPIView):
@@ -215,11 +238,12 @@ class PostListCreateAPIView(ListCreateAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
 
-    @cache_page(settings.CACHE_TTL)
+    # Use the cache_response decorator with a custom key_func argument
+    @cache_response(timeout=settings.CACHE_TTL, key_func='my_cache_key')
     def get(self, request, *args, **kwargs):
         try:
-            # Call the Celery task to scrape the posts asynchronously
-            scrape_posts.delay()
+            # Call the Celery task to scrape the posts synchronously
+            scrape_posts()
 
             # Get all the Post objects from the database and order them by creation date (newest first)
             posts = Post.objects.all().order_by("-created_at")
@@ -233,6 +257,13 @@ class PostListCreateAPIView(ListCreateAPIView):
             # Log the exception and return an error message
             logging.error(e)
             return Response({'message': 'Something went wrong. Please try again later.'}, status=500)
+
+    def my_cache_key(self, view_instance, view_method,
+                     request, args, kwargs):
+        return '{user}-{params}'.format(
+            user=request.user.id,
+            params=request.query_params.urlencode()
+        )
 
     def post(self, request, *args, **kwargs):
         # Get the request data
@@ -249,7 +280,18 @@ class PostListCreateAPIView(ListCreateAPIView):
         return Response(serializer.data, status=201)
 
 
+def calculate_cache_key(view_instance, view_method,
+                        request, args, kwargs):
+    # Define a custom cache key function that takes into account
+    # the request user and the query parameters
+    return '{user}-{params}'.format(
+        user=request.user.id,
+        params=request.query_params.urlencode()
+    )
+
 # write post details
+
+
 @api_view(['GET'])
 def post_details(request, pk):
     pass

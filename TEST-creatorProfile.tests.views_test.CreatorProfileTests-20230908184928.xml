@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="creatorProfile.tests.views_test.CreatorProfileTests-20230908184928" tests="2" file="creatorProfile/tests/views_test.py" time="136.647" timestamp="2023-09-08T18:51:44" failures="1" errors="0" skipped="0">
+	<testcase classname="creatorProfile.tests.views_test.CreatorProfileTests" name="test_creator_details_exception" time="97.514" timestamp="2023-09-08T18:51:05" file="BinanceFeedScraper/creatorProfile/tests/views_test.py" line="30"/>
+	<testcase classname="creatorProfile.tests.views_test.CreatorProfileTests" name="test_creator_details_not_in_cache" time="39.133" timestamp="2023-09-08T18:51:44" file="BinanceFeedScraper/creatorProfile/tests/views_test.py" line="6">
+		<failure type="AssertionError" message="500 != 400"><![CDATA[Traceback (most recent call last):
+  File "/usr/lib/python3.10/unittest/mock.py", line 1379, in patched
+    return func(*newargs, **newkeywargs)
+  File "/home/asif/BinanceFeedTwitterBot/BinanceFeedScraper/creatorProfile/tests/views_test.py", line 28, in test_creator_details_not_in_cache
+    self.assertEqual(response.status_code, 400)
+AssertionError: 500 != 400
+]]></failure>
+	</testcase>
+</testsuite>
