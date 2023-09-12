@@ -25,10 +25,11 @@ This is a Django project that scrapes posts from a creator profile on Binance Fe
 
 ## Usage
 1. Start the Redis server in a terminal by running `redis-server`.
-2. Start the Celery worker process in another terminal by running `celery -A creatorProfile worker -l info` (where `creatorProfile` is the name of Django app that contains the `celery.py` file).
-3. Start the Celery beat process in another terminal by running `celery -A creatorProfile beat -l info` (if you have periodic tasks)
-4. Start the Django development server in another terminal by running `python manage.py runserver`.
-5. Open your browser and go to http://127.0.0.1:8000/creator/posts/ to see the list of posts scraped from the creator profile.
+2. Export environment variable `DJANGO_SETTINGS_MODULE` that tells Celery where to find your Django settings module `export DJANGO_SETTINGS_MODULE=BinanceFeedScraper.settings`
+3. Start the Celery worker process in another terminal by running `celery -A creatorProfile worker -l info` (where `creatorProfile` is the name of Django app that contains the `celery.py` file).
+4. Start the Celery beat process in another terminal by running `celery -A creatorProfile beat -l info` (if you have periodic tasks)
+5. Start the Django development server in another terminal by running `python manage.py runserver`.
+6. Open your browser and go to http://127.0.0.1:8000/creator/posts/ to see the list of posts scraped from the creator profile.
 
 ## Contributing
 Contributions are welcome! Please feel free to submit a pull request or open an issue.
