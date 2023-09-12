@@ -164,3 +164,7 @@ cython_debug/
 
 # Log directory
 logs/
+
+# Redis file 
+dump.rdb
+*.rdb
