@@ -154,6 +154,6 @@ INTERNAL_IPS = [
 ]
 
 # The URL of the Redis server
-CELERY_broker_url = 'redis://localhost:6379'
+CELERY_BROKER_URL = 'redis://localhost:6379'
 # The URL of the Redis database to store the results
-result_backend = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
