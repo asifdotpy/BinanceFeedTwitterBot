@@ -14,6 +14,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
 import logging
 import os
 from dotenv import load_dotenv
@@ -142,7 +143,12 @@ def scrape_posts():
 
     # Create a driver instance
     try:
-        driver = webdriver.Chrome()
+        options = Options()
+        options.add_argument("--no-sandbox") # Bypass OS security model
+        options.add_argument("--headless") # Run in headless mode
+        options.add_argument("--disable-gpu") # Disable GPU acceleration
+        options.add_argument("--disable-dev-shm-usage") # Overcome limited resource problems
+        driver = webdriver.Chrome(options=options)
     except Exception as e:
         logging.error("Failed to create driver instance", exc_info=e)
         return
