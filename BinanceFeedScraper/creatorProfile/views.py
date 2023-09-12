@@ -233,6 +233,14 @@ def scrape_posts():
     driver.quit()
 
 
+def my_cache_key(self, view_instance, view_method,
+                 request, args, kwargs):
+    return '{user}-{params}'.format(
+        user=request.user.id,
+        params=request.query_params.urlencode()
+    )
+
+
 class PostListCreateAPIView(ListCreateAPIView):
     # Specify the queryset and serializer class for this view
     queryset = Post.objects.all()
@@ -258,13 +266,6 @@ class PostListCreateAPIView(ListCreateAPIView):
             logging.error(e)
             return Response({'message': 'Something went wrong. Please try again later.'}, status=500)
 
-    def my_cache_key(self, view_instance, view_method,
-                     request, args, kwargs):
-        return '{user}-{params}'.format(
-            user=request.user.id,
-            params=request.query_params.urlencode()
-        )
-
     def post(self, request, *args, **kwargs):
         # Get the request data
         data = request.data
@@ -279,15 +280,13 @@ class PostListCreateAPIView(ListCreateAPIView):
         # Return a JSON response with the serialized data and a status code of 201 (created)
         return Response(serializer.data, status=201)
 
+    def my_cache_key(self, view_instance, view_method,
+                     request, args, kwargs):
+        return '{user}-{params}'.format(
+            user=request.user.id,
+            params=request.query_params.urlencode()
+        )
 
-def calculate_cache_key(view_instance, view_method,
-                        request, args, kwargs):
-    # Define a custom cache key function that takes into account
-    # the request user and the query parameters
-    return '{user}-{params}'.format(
-        user=request.user.id,
-        params=request.query_params.urlencode()
-    )
 
 # write post details
 

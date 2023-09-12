@@ -152,3 +152,8 @@ SESSION_CACHE_ALIAS = "default"
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
+
+# The URL of the Redis server
+CELERY_BROKER_URL = 'redis://localhost:6379'
+# The URL of the Redis database to store the results
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
