@@ -168,3 +168,10 @@ logs/
 # Redis file 
 dump.rdb
 *.rdb
+
+# Added migrations for django apps
+**/migrations/*
+!**/migrations/__init__.py
+
+# Added redis database
+dump.rdb

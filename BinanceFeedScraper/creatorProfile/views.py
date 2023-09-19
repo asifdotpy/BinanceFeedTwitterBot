@@ -20,6 +20,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 import logging
 import os
 from dotenv import load_dotenv
+import time
 import requests
 from lxml import html
 
@@ -167,14 +168,14 @@ def scrape_posts():
 
     # Wait for the posts to load
     try:
-        wait = WebDriverWait(driver, 10)
+        wait = WebDriverWait(driver, 30)
         wait.until(EC.presence_of_element_located(
-            (By.CLASS_NAME, "css-1x9zltl")))
+            (By.CSS_SELECTOR, ".kol-content-list-container")))
+        logging.info("Contents loaded successfully!")
     except Exception as e:
         logging.error("Failed to wait for posts elements", exc_info=e)
         driver.quit()
         return
-
     # Initialize an empty list to store the posts elements
     posts = []
 
@@ -183,8 +184,10 @@ def scrape_posts():
 
     # Loop until there are no more posts to load
     while True:
+        print("Loop started")
         # Find all the posts elements on the page
-        posts = driver.find_elements_by_class_name("css-1x9zltl")
+        posts = driver.find_elements(
+            By.CLASS_NAME, "FeedBuzzBaseView_FeedBuzzBaseViewRoot__1sC8Q")
 
         # Get the current number of posts
         current_posts = len(posts)
@@ -201,7 +204,7 @@ def scrape_posts():
             # Wait for new posts to load or timeout
             try:
                 wait.until(lambda driver: len(
-                    driver.find_elements_by_class_name("css-1x9zltl")) > num_posts)
+                    driver.find_elements(By.CLASS_NAME, "FeedBuzzBaseView_FeedBuzzBaseViewRoot__1sC8Q")) > num_posts)
             except Exception as e:
                 logging.warning(
                     "No more posts loaded or timed out", exc_info=e)
@@ -210,34 +213,13 @@ def scrape_posts():
             # No more posts loaded, break the loop
             break
 
-    # Get or create a Post object for each post element and save it in the database
+# get or create a Post object for each post element and save it in the database
     for post in posts:
-        try:
-            # Get the title, summary, and URL of the post
-            title = post.find_element_by_class_name("css-1kx3y31").text
-            summary = post.find_element_by_class_name("css-vurnku").text
-            post_url = post.find_element_by_tag_name("a").get_attribute("href")
-
-            # Get or create a Post object with the same title and URL as the post element
-            post_obj, created = Post.objects.get_or_create(
-                title=title, url=post_url)
-
-            # If the Post object is newly created, set its summary and created_at attributes and save it
-            if created:
-                post_obj.summary = summary
-
-                # Find the creation time element by its class name and get its text content
-                create_time = post.find_element_by_class_name(
-                    "create-time").text
-
-                # Parse the creation time string into a datetime object using dateutil.parser.parse
-                create_time = parse(create_time)
-
-                # Set the created_at attribute of the Post object to the datetime object
-                post_obj.created_at = create_time
-                post_obj.save()
-        except Exception as e:
-            logging.error("Failed to get or create Post object", exc_info=e)
+        logging.info("Scraping post")
+        print(post)
+        break
+        # Get the time of scrap, url, create time, tendency, title(if article),
+        # main content, poster, watches, likes, comments, shares.
 
     # Close the driver
     driver.quit()
@@ -260,6 +242,7 @@ class PostListCreateAPIView(ListCreateAPIView):
     @cache_response(timeout=settings.CACHE_TTL, key_func='my_cache_key')
     def get(self, request, *args, **kwargs):
         try:
+            logging.info('Starting to scrape posts.')
             # Call the Celery task to scrape the posts synchronously
             scrape_posts()
 
@@ -269,11 +252,13 @@ class PostListCreateAPIView(ListCreateAPIView):
             # Serialize the posts data
             serializer = self.get_serializer(posts, many=True)
 
+            logging.info('Successfully scraped and serialized posts.')
             # Return a JSON response with the serialized data
             return Response(serializer.data)
         except Exception as e:
             # Log the exception and return an error message
-            logging.error(e)
+            logging.error(
+                'Error occurred while scraping or serializing posts: %s', e)
             return Response({'message': 'Something went wrong. Please try again later.'}, status=500)
 
     def post(self, request, *args, **kwargs):
@@ -283,9 +268,17 @@ class PostListCreateAPIView(ListCreateAPIView):
         # Validate and serialize the data
         serializer = self.get_serializer(data=data)
 
-        # Save the serialized data as a Post object in the database
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        try:
+            logging.info('Starting to validate and save post.')
+            # Save the serialized data as a Post object in the database
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+            logging.info('Successfully validated and saved post.')
+        except Exception as e:
+            logging.error(
+                'Error occurred while validating or saving post: %s', e)
+            raise
 
         # Return a JSON response with the serialized data and a status code of 201 (created)
         return Response(serializer.data, status=201)
@@ -296,7 +289,6 @@ class PostListCreateAPIView(ListCreateAPIView):
             user=request.user.id,
             params=request.query_params.urlencode()
         )
-
 
 # write post details
 

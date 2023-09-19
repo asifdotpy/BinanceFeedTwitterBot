@@ -60,4 +60,5 @@ class PostSerializer(serializers.ModelSerializer):
     # Specify the fields that you want to include in the JSON output
     class Meta:
         model = Post
-        fields = ['title', 'summary', 'url', 'created_at']
+        fields = ['title', 'summary', 'url', 'created_at', 'scraped_at',
+                  'tendency', 'content', 'poster', 'watches', 'likes', 'comments', 'shares']
